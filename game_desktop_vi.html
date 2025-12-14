@@ -180,6 +180,7 @@
     }
 
     @media (max-width: 420px) {
+
       .layout-form {
         width: 76%;
         top: 54%;
@@ -333,12 +334,24 @@
       white-space: pre-line;
     }
 
+
+.spa-result-row{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
     .spa-result-icon {
-      display: flex;
-      justify-content: center;
-      padding-top: 2px;
-      margin-top: 4px;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
 
     .spa-result-icon img {
       width: 92px;
@@ -348,18 +361,19 @@
     }
 
     .spa-result-frame {
-      position: relative;
-      width: 72%;
-      margin: 6px auto 0;
-    }
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(180px, 30vw, 260px);
+  margin: 0;
+}
 
-    .spa-result-frame img {
-      width: 100%;
-      display: block;
-      height: auto;
-    }
+.spa-result-frame img {
+  width: 100%;
+  display: block;
+  height: auto;
+}
 
-    .spa-result-frame .spa-frame-text {
+.spa-result-frame .spa-frame-text {
       position: absolute;
       inset: 0;
       display: flex;
@@ -527,6 +541,15 @@
       .spa-frame-text .t2 {
         font-size: 36px;
       }
+/* Result row: stack on very small screens */
+.spa-result-row{
+  flex-direction: column;
+  gap: 8px;
+}
+.spa-result-frame{
+  width: min(72%, 260px);
+}
+
     }
   </style>
   <!-- CleverTap Web SDK (WORKING SNIPPET) -->
@@ -605,7 +628,8 @@
         <div class="screen layout-result" id="screenResult">
           <div class="spa-intro" id="resultIntro"></div>
 
-          <div class="spa-result-icon">
+          <div class="spa-result-row">
+<div class="spa-result-icon">
             <img id="resultIcon" alt="Result icon" />
           </div>
 
@@ -613,6 +637,7 @@
             <img id="resultFrameImg" alt="Result frame" />
             <div class="spa-frame-text">
               <div class="t1" id="frameT1"></div>
+          </div>
               <div class="t2"><span id="framePercent">--</span>%</div>
               <div class="t3" id="frameT3"></div>
             </div>
@@ -802,7 +827,7 @@
 
     function setError(msg) {
       const box = $('#formError');
-      if(!msg){
+      if (!msg) {
         box.classList.remove('is-show');
         box.textContent = '';
         return;
@@ -842,64 +867,45 @@
     }
 
     // Attempt coupon fetch with retry across promotions
-   function ctCouponFetchWithRetry(promoNames, maxRetry) {
-  return new Promise((resolve, reject) => {
-    let attempts = 0;
-    const tried = new Set();
+    function ctCouponFetchWithRetry(promoNames, maxRetry) {
+      return new Promise((resolve, reject) => {
+        let attempts = 0;
+        const tried = new Set();
 
-    const doTry = () => {
-      attempts++;
+        const doTry = () => {
+          attempts++;
+          const remaining = promoNames.filter(n => !tried.has(n));
+          const promo = remaining.length ? randPick(remaining) : randPick(promoNames);
+          tried.add(promo);
 
-      const remaining = promoNames.filter(n => !tried.has(n));
-      const promo = remaining.length ? randPick(remaining) : randPick(promoNames);
-      tried.add(promo);
+          // If clevertap.coupon.fetch exists, use it; else simulate for local testing.
+          const fetchFn = hasCleverTap() && window.clevertap.coupon && typeof window.clevertap.coupon.fetch === 'function'
+            ? window.clevertap.coupon.fetch
+            : null;
 
-      const hasFetch =
-        hasCleverTap() &&
-        window.clevertap &&
-        window.clevertap.coupon &&
-        typeof window.clevertap.coupon.fetch === "function";
+          const onSuccess = (coupon) => resolve(coupon);
+          const onFail = (err) => {
+            if (attempts >= maxRetry) return reject(err || new Error('fetch failed'));
+            doTry();
+          };
 
-      console.log(`[CT][FETCH] attempt ${attempts}/${maxRetry} promo="${promo}" hasFetch=${hasFetch}`);
+          if (fetchFn) {
+            try {
+              // Many CT implementations: clevertap.coupon.fetch(promoName, successCb, errorCb)
+              fetchFn(promo, onSuccess, onFail);
+            } catch (e) {
+              onFail(e);
+            }
+          } else {
+            // Local fallback simulation:
+            const simulatedName = randPick(promoNames);
+            onSuccess({ name: simulatedName, code: 'UNIQUECODE-' + Math.random().toString(16).slice(2, 10).toUpperCase() });
+          }
+        };
 
-      const onSuccess = (coupon) => {
-        console.log("[CT][FETCH] ✅ SUCCESS promo=", promo);
-        console.log("[CT][FETCH] coupon response:", coupon);
-        console.log("[CT][FETCH] coupon.name=", coupon?.name, "coupon.code=", coupon?.code);
-
-        // Hard check: nếu không có code thì coi như fail để retry
-        if (!coupon || !coupon.code) {
-          console.warn("[CT][FETCH] ⚠️ SUCCESS but missing coupon.code => retry");
-          return onFail(new Error("missing coupon.code"));
-        }
-
-        resolve(coupon);
-      };
-
-      const onFail = (err) => {
-        console.warn("[CT][FETCH] ❌ FAIL promo=", promo, "err=", err);
-        if (attempts >= maxRetry) {
-          reject(err || new Error("fetch failed"));
-        } else {
-          doTry();
-        }
-      };
-
-      if (hasFetch) {
-        try {
-          // Signature phổ biến: fetch(promoName, successCb, errorCb)
-          window.clevertap.coupon.fetch(promo, onSuccess, onFail);
-        } catch (e) {
-          onFail(e);
-        }
-      } else {
-        return reject(new Error('clevertap.coupon.fetch not found — not fetching from CleverTap'));
-      }
-    };
-
-    doTry();
-  });
-}
+        doTry();
+      });
+    }
 
 
     /**
