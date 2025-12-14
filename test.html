@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CleverTap Fetch Coupon (1-file HTML)</title>
+  <style>
+    body{font-family:system-ui,Arial; padding:16px; max-width:900px; margin:auto}
+    input,select,button,textarea{width:100%; padding:10px; margin:6px 0}
+    pre{background:#111; color:#eee; padding:12px; overflow:auto}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    @media (max-width:720px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <h2>Fetch Coupon API (CleverTap)</h2>
+
+  <div class="row">
+    <div>
+      <label>Region (IDC)</label>
+      <select id="region">
+        <option value="in1">in1 (India)</option>
+        <option value="sg1">sg1 (Singapore)</option>
+        <option value="us1">us1 (US)</option>
+        <option value="aps3">aps3 (Indonesia)</option>
+        <option value="mec1">mec1 (Middle East)</option>
+        <option value="eu1">eu1 (Europe default)</option>
+      </select>
+    </div>
+    <div>
+      <label>Identity (optional)</label>
+      <input id="identity" placeholder="VD: user123 (có thể để trống)" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label>X-CleverTap-Account-Id</label>
+      <input id="acct" placeholder="ACCOUNT_ID" />
+    </div>
+    <div>
+      <label>X-CleverTap-Passcode</label>
+      <input id="pass" placeholder="PASSCODE" />
+    </div>
+  </div>
+
+  <label>Request body JSON (tối giản cũng được)</label>
+  <textarea id="body" rows="10"></textarea>
+
+  <button id="btn">Fetch</button>
+
+  <h3>Result</h3>
+  <pre id="out">(chưa chạy)</pre>
+
+<script>
+  // payload mẫu bám theo docs: body có thể có order/items; identity có thể đi query param
+  // Docs sample dùng "couponCode" + "order" + "items" trong order. :contentReference[oaicite:1]{index=1}
+  const defaultBody = {
+    // couponCode: "OPTIONAL_CODE_FILTER",
+    order: {
+      orderId: "order_demo_001",
+      saleMrpTotal: 0,
+      saleAmount: 0,
+      saleChannel: "online",
+      location: "VN",
+      locationId: "VN",
+      orderStatus: "pending",
+      items: []
+    }
+  };
+
+  document.getElementById("body").value = JSON.stringify(defaultBody, null, 2);
+
+  function apiHostFromRegion(region){
+    // theo bảng IDC: in1/sg1/us1/aps3/mec1 là "<region>.api.clevertap.com"
+    // Europe default là "api.clevertap.com" :contentReference[oaicite:2]{index=2}
+    if (region === "eu1") return "api.clevertap.com";
+    return `${region}.api.clevertap.com`;
+  }
+
+  document.getElementById("btn").addEventListener("click", async () => {
+    const region = document.getElementById("region").value;
+    const host = apiHostFromRegion(region);
+    const acct = document.getElementById("acct").value.trim();
+    const pass = document.getElementById("pass").value.trim();
+    const identity = document.getElementById("identity").value.trim();
+    const out = document.getElementById("out");
+
+    if (!acct || !pass) {
+      out.textContent = "Thiếu Account ID hoặc Passcode";
+      return;
+    }
+
+    let bodyObj;
+    try { bodyObj = JSON.parse(document.getElementById("body").value); }
+    catch (e) { out.textContent = "Body JSON lỗi: " + e.message; return; }
+
+    const url = new URL(`https://${host}/1/promo/coupons`);
+    if (identity) url.searchParams.set("identity", identity);
+
+    out.textContent = "Calling: " + url.toString() + "\n...\n";
+
+    try {
+      const res = await fetch(url.toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CleverTap-Account-Id": acct,
+          "X-CleverTap-Passcode": pass
+        },
+        body: JSON.stringify(bodyObj)
+      });
+
+      const text = await res.text();
+      out.textContent = `HTTP ${res.status}\n` + text;
+
+      // tiện: thử parse và in couponCode đầu tiên nếu có
+      try {
+        const json = JSON.parse(text);
+        const first = json?.records?.[0];
+        if (first?.couponCode) out.textContent += `\n\nFirst couponCode: ${first.couponCode}`;
+      } catch {}
+    } catch (err) {
+      out.textContent =
+        "Fetch FAILED (thường là do CORS/preflight):\n" +
+        (err?.message || String(err));
+    }
+  });
+</script>
+</body>
+</html>

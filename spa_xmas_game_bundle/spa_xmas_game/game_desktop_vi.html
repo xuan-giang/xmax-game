@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SPA Xmas Game</title>
+  <style>
+    :root{
+      --popup-max-w-desktop: 520px;
+      --popup-max-w-mobile: 360px;
+
+      --overlay-bg: rgba(0,0,0,.55);
+
+      --close-size: 34px;
+      --close-bg: #d62b2b;
+      --close-border: #ffffff;
+
+      --text-dark: #1b1b1b;
+      --text-light: #ffffff;
+
+      --btn-radius: 999px;
+      --btn-pad-y: 12px;
+      --btn-pad-x: 18px;
+
+      --input-radius: 12px;
+      --input-h: 44px;
+
+      --shadow: 0 18px 55px rgba(0,0,0,.35);
+    }
+
+    /* ========= Page wrapper (demo) ========= */
+    html, body { height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:#f6f6f6;
+      color: var(--text-dark);
+    }
+
+    /* ========= Sticky (Màn 1) ========= */
+    .spa-sticky{
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: 160px;
+      height: auto;
+      cursor: pointer;
+      z-index: 9999;
+      user-select:none;
+    }
+    .spa-sticky img{
+      width:100%;
+      height:auto;
+      display:block;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+    }
+    .spa-sticky[hidden]{ display:none !important; }
+
+    /* ========= Modal shell ========= */
+    .spa-modal{
+      position: fixed;
+      inset: 0;
+      background: var(--overlay-bg);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 10000;
+    }
+    .spa-modal.is-open{ display:flex; }
+
+    .spa-popup{
+      position: relative;
+      width: min(92vw, var(--popup-w));
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transform: translateY(6px);
+      animation: popIn .18s ease-out forwards;
+      background:#fff;
+    }
+    @keyframes popIn{
+      to { transform: translateY(0); }
+    }
+
+    /* Base image (popup-base.png) */
+    .spa-popup__base{
+      width:100%;
+      display:block;
+      height:auto;
+    }
+
+    /* Close button (CSS) */
+    .spa-close{
+      position:absolute;
+      top: 12px;
+      right: 12px;
+      width: var(--close-size);
+      height: var(--close-size);
+      border-radius: 999px;
+      background: var(--close-bg);
+      border: 2px solid var(--close-border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      z-index: 5;
+    }
+    .spa-close::before, .spa-close::after{
+      content:"";
+      position:absolute;
+      width: 18px;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+    }
+    .spa-close::before{ transform: rotate(45deg); }
+    .spa-close::after{ transform: rotate(-45deg); }
+
+    /* ========= Content overlay area ========= */
+    .spa-content{
+      position:absolute;
+      inset: 0;
+      padding: 18px 22px;
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 2;
+      pointer-events: none; /* enable click only on interactive children */
+    }
+    .spa-content *{ pointer-events: auto; }
+
+    .spa-title{
+      text-align:center;
+      font-weight: 800;
+      letter-spacing:.2px;
+      line-height:1.15;
+      margin-top: 34px; /* avoid close button */
+      font-size: 20px;
+      color: var(--text-light);
+      text-shadow: 0 3px 10px rgba(0,0,0,.35);
+    }
+
+    .spa-icons{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+    .spa-icons img{
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.22));
+    }
+
+    /* Form area */
+    .spa-form{
+      margin-top: 8px;
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+    .spa-input{
+      width: 86%;
+      height: var(--input-h);
+      border-radius: var(--input-radius);
+      border: 1px solid rgba(0,0,0,.12);
+      padding: 0 14px;
+      font-size: 14px;
+      outline:none;
+      background: rgba(255,255,255,.95);
+    }
+    .spa-input:focus{
+      border-color: rgba(0,0,0,.22);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.25);
+    }
+
+    .spa-check{
+      width: 86%;
+      display:flex;
+      gap: 8px;
+      align-items:flex-start;
+      font-size: 12px;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 2px 8px rgba(0,0,0,.35);
+    }
+    .spa-check input{ margin-top: 2px; }
+
+    .spa-btn{
+      border: 0;
+      border-radius: var(--btn-radius);
+      padding: var(--btn-pad-y) var(--btn-pad-x);
+      font-weight: 800;
+      cursor:pointer;
+      width: 86%;
+      font-size: 14px;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+    .spa-btn--primary{
+      background: #ffcc33;
+      color: #1a1a1a;
+      box-shadow: 0 10px 18px rgba(0,0,0,.18);
+    }
+    .spa-btn--primary:active{ transform: translateY(1px); }
+
+    .spa-error{
+      width: 86%;
+      font-size: 12px;
+      color: #ffe7e7;
+      background: rgba(214,43,43,.55);
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 12px;
+      padding: 8px 10px;
+      display:none;
+    }
+    .spa-error.is-show{ display:block; }
+
+    /* ========= Result screen ========= */
+    .spa-intro{
+      text-align:center;
+      font-size: 13px;
+      line-height: 1.35;
+      color: rgba(255,255,255,.96);
+      text-shadow: 0 2px 10px rgba(0,0,0,.35);
+      margin-top: 32px;
+      padding: 0 8px;
+      white-space: pre-line;
+    }
+
+    .spa-result-icon{
+      display:flex;
+      justify-content:center;
+      margin-top: 4px;
+    }
+    .spa-result-icon img{
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 14px rgba(0,0,0,.25));
+    }
+
+    .spa-result-frame{
+      position: relative;
+      width: 86%;
+      margin: 6px auto 0;
+    }
+    .spa-result-frame img{
+      width:100%;
+      display:block;
+      height:auto;
+    }
+    .spa-result-frame .spa-frame-text{
+      position:absolute;
+      inset: 0;
+      display:flex;
+      flex-direction: column;
+      align-items:center;
+      justify-content:center;
+      gap: 4px;
+      text-align:center;
+      font-weight: 900;
+      color:#1a1a1a;
+    }
+    .spa-frame-text .t1{ font-size: 12px; letter-spacing: .6px; }
+    .spa-frame-text .t2{ font-size: 40px; line-height: 1; }
+    .spa-frame-text .t3{ font-size: 12px; letter-spacing: .6px; }
+
+    .spa-note{
+      width: 86%;
+      margin: 6px auto 0;
+      text-align:center;
+      font-size: 12px;
+      line-height: 1.35;
+      color: rgba(255,255,255,.94);
+      text-shadow: 0 2px 8px rgba(0,0,0,.35);
+      white-space: pre-line;
+    }
+
+    .spa-code-row{
+      width: 86%;
+      margin: 6px auto 0;
+      display:flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .spa-code{
+      flex: 1;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.95);
+      padding: 0 12px;
+      height: 44px;
+      display:flex;
+      align-items:center;
+      font-weight: 800;
+      letter-spacing:.4px;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .spa-copy{
+      width: 92px;
+      border-radius: 12px;
+      border: 0;
+      background: #ffffff;
+      font-weight: 900;
+      cursor:pointer;
+    }
+
+    .spa-btn--secondary{
+      background: #ffffff;
+      color:#1a1a1a;
+      box-shadow: 0 10px 18px rgba(0,0,0,.18);
+    }
+
+    .spa-toast{
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.82);
+      color:#fff;
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      display:none;
+      z-index: 20000;
+    }
+    .spa-toast.is-show{ display:block; }
+
+    /* ========= Screen switching ========= */
+    .screen{ display:none; }
+    .screen.is-active{ display:block; }
+
+    /* ========= Device variants ========= */
+    body.device-desktop{ --popup-w: var(--popup-max-w-desktop); }
+    body.device-mobile{ --popup-w: var(--popup-max-w-mobile); }
+
+    /* Make overlay positions stable across aspect ratios (percent-based) */
+    /* You can tweak these values later if needed after swapping real assets */
+    .layout-form .spa-title{ margin-top: 38px; }
+    .layout-form .spa-form{ margin-top: 10px; }
+
+    .layout-result .spa-intro{ margin-top: 40px; }
+    .layout-result .spa-result-icon img{ width: 98px; height: 98px; }
+
+    @media (max-width: 420px){
+      .spa-icons img{ width: 40px; height: 40px; }
+      .spa-frame-text .t2{ font-size: 36px; }
+    }
+  </style>
+</head>
+<body class="device-desktop">
+  <!-- ===== Sticky (Màn 1) ===== -->
+  <div class="spa-sticky" id="spaSticky" aria-label="Open Xmas game">
+    <img id="stickyImg" alt="Sticky" />
+  </div>
+
+  <!-- ===== Modal + Popup ===== -->
+  <div class="spa-modal" id="spaModal" aria-hidden="true">
+    <div class="spa-popup" role="dialog" aria-modal="true" aria-label="Xmas game popup">
+      <div class="spa-close" id="spaClose" aria-label="Close"></div>
+
+      <img class="spa-popup__base" id="popupBaseImg" alt="Popup base" />
+
+      <!-- Overlay content -->
+      <div class="spa-content" id="spaContent">
+        <!-- Màn 2: Form -->
+        <div class="screen layout-form" id="screenForm">
+          <div class="spa-title" id="formTitle"></div>
+
+          <div class="spa-icons" id="formIcons"></div>
+
+          <div class="spa-error" id="formError"></div>
+
+          <form class="spa-form" id="leadForm" autocomplete="on">
+            <input class="spa-input" id="inpName" type="text" name="name" />
+            <input class="spa-input" id="inpEmail" type="email" name="email" />
+
+            <label class="spa-check">
+              <input id="inpAgree" type="checkbox" />
+              <span id="agreeText"></span>
+            </label>
+
+            <button class="spa-btn spa-btn--primary" type="submit" id="btnOpenGift"></button>
+          </form>
+        </div>
+
+        <!-- Màn 3: Result -->
+        <div class="screen layout-result" id="screenResult">
+          <div class="spa-intro" id="resultIntro"></div>
+
+          <div class="spa-result-icon">
+            <img id="resultIcon" alt="Result icon" />
+          </div>
+
+          <div class="spa-result-frame">
+            <img id="resultFrameImg" alt="Result frame" />
+            <div class="spa-frame-text">
+              <div class="t1" id="frameT1"></div>
+              <div class="t2"><span id="framePercent">--</span>%</div>
+              <div class="t3" id="frameT3"></div>
+            </div>
+          </div>
+
+          <div class="spa-note" id="resultNote"></div>
+
+          <div class="spa-code-row">
+            <div class="spa-code" id="uniqueCode">------</div>
+            <button class="spa-copy" type="button" id="btnCopy"></button>
+          </div>
+
+          <button class="spa-btn spa-btn--secondary" type="button" id="btnLearnMore"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spa-toast" id="spaToast">Copied</div>
+
+  <script>
+    /**
+     * ===========================
+     * COMMON CONFIG (edit here)
+     * ===========================
+     */
+    const COMMON_CONFIG = {
+      ASSET_BASE: './assets/',
+
+      // Assets
+      STICKY_IMAGE: 'sticky.png',
+      POPUP_BASE: 'popup-base.png',
+      RESULT_FRAME: 'result-frame.png',
+
+      FORM_ICONS: [
+        'form-icon-1.png',
+        'form-icon-2.png',
+        'form-icon-3.png',
+        'form-icon-4.png',
+        'form-icon-5.png'
+      ],
+
+      RESULT_ICONS: {
+        'PROMO_50': 'result-50.png',
+        'PROMO_20': 'result-20.png',
+        'PROMO_10': 'result-10.png',
+        'PROMO_8':  'result-8.png',
+        'PROMO_5':  'result-5.png'
+      },
+
+      // Coupon name -> result key mapping (EDIT TO MATCH YOUR COUPON.NAME)
+      // Example: if coupon.name returned from CleverTap is "PROMO_20", it will show 20% layout + icon.
+      COUPON_NAME_TO_RESULT_KEY: {
+        'PROMO_50': 'PROMO_50',
+        'PROMO_20': 'PROMO_20',
+        'PROMO_10': 'PROMO_10',
+        'PROMO_8':  'PROMO_8',
+        'PROMO_5':  'PROMO_5'
+      },
+
+      RESULT_PERCENT: {
+        'PROMO_50': 50,
+        'PROMO_20': 20,
+        'PROMO_10': 10,
+        'PROMO_8':  8,
+        'PROMO_5':  5
+      },
+
+      CTA_LINKS: [
+        'https://example.com/1',
+        'https://example.com/2',
+        'https://example.com/3'
+      ],
+
+      // Behavior
+      HIDE_STICKY_ON_CLOSE: false,
+
+      // Optional one-play lock
+      ENABLE_ONE_PLAY_LOCK: false,
+      ONE_PLAY_KEY: 'SPA_XMAS_PLAYED_V1',
+
+      // CleverTap promotion names (optional). If you use 1 promotion only, set 1 item.
+      PROMOTION_NAMES: ['PROMO_50','PROMO_20','PROMO_10','PROMO_8','PROMO_5'],
+      MAX_FETCH_RETRY: 6
+    };
+
+    /**
+     * ===========================
+     * Language pack
+     * ===========================
+     */
+    const I18N = {
+      vi: {
+        formTitle: 'NOEL TỚI, MỞ DEAL HỜI',
+        namePh: 'Họ và tên',
+        emailPh: 'Email',
+        agree: 'Tôi đồng ý với điều khoản và điều kiện chương trình.',
+        openGift: 'MỞ QUÀ NGAY',
+        errRequired: 'Vui lòng nhập đầy đủ Họ và tên và Email.',
+        errEmail: 'Email không đúng định dạng.',
+        errAgree: 'Vui lòng tick đồng ý điều khoản.',
+        errFetch: 'Hệ thống đang bận. Vui lòng thử lại sau.',
+        intro: 'Tiếng chuông ngân vang, Giáng Sinh đã tới!\nSun PhuQuoc Airways có món quà nhỏ gửi tặng bạn',
+        frameT1: 'MÃ GIẢM GIÁ',
+        frameT3: 'VÉ MÁY BAY',
+        note: '(*) Hạn sử dụng đến 31/3/2026,\nMã ưu đãi và chi tiết chương trình sẽ được gửi về email đã đăng ký.',
+        copy: 'COPY',
+        copied: 'Đã sao chép',
+        learnMore: 'TÌM HIỂU THÊM'
+      },
+      en: {
+        formTitle: 'CHRISTMAS IS HERE — UNWRAP GREAT DEALS',
+        namePh: 'Full name',
+        emailPh: 'Email',
+        agree: 'I agree to the program terms and conditions.',
+        openGift: 'OPEN GIFT NOW',
+        errRequired: 'Please enter your full name and email.',
+        errEmail: 'Invalid email format.',
+        errAgree: 'Please agree to the terms.',
+        errFetch: 'System is busy. Please try again later.',
+        intro: 'Christmas bells are ringing!\nSun PhuQuoc Airways has a small gift for you',
+        frameT1: 'DISCOUNT CODE',
+        frameT3: 'FLIGHT TICKET',
+        note: '(*) Valid until 31/3/2026.\nThe promo code and details will be sent to your registered email.',
+        copy: 'COPY',
+        copied: 'Copied',
+        learnMore: 'LEARN MORE'
+      }
+    };
+
+    /**
+     * ===========================
+     * Build-time injected
+     * ===========================
+     */
+    const BUILD = {
+      LANG: 'vi',
+      DEVICE: 'desktop' // 'desktop' | 'mobile'
+    };
+
+    /**
+     * ===========================
+     * Utilities
+     * ===========================
+     */
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+    const randPick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+    function showToast(text){
+      const t = $('#spaToast');
+      t.textContent = text;
+      t.classList.add('is-show');
+      setTimeout(()=>t.classList.remove('is-show'), 1500);
+    }
+
+    function setScreen(screenId){
+      ['screenForm','screenResult'].forEach(id => $('#'+id).classList.remove('is-active'));
+      $('#'+screenId).classList.add('is-active');
+    }
+
+    function openModal(){
+      $('#spaModal').classList.add('is-open');
+      $('#spaModal').setAttribute('aria-hidden','false');
+    }
+    function closeModal(){
+      $('#spaModal').classList.remove('is-open');
+      $('#spaModal').setAttribute('aria-hidden','true');
+    }
+
+    function validEmail(email){
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(email||'').trim());
+    }
+
+    function setError(msg){
+      const box = $('#formError');
+      if(!msg){
+        box.classList.remove('is-show');
+        box.textContent = '';
+        return;
+      }
+      box.textContent = msg;
+      box.classList.add('is-show');
+    }
+
+    /**
+     * ===========================
+     * CleverTap helpers (safe)
+     * ===========================
+     */
+    function hasCleverTap(){
+      return typeof window.clevertap === 'object' && window.clevertap;
+    }
+
+    function ctProfilePush(profile){
+      try{
+        if(hasCleverTap() && window.clevertap.profile && typeof window.clevertap.profile.push === 'function'){
+          window.clevertap.profile.push(profile);
+        } else {
+          console.log('[CT] profile.push', profile);
+        }
+      }catch(e){ console.warn('profile.push error', e); }
+    }
+
+    function ctEventPush(evtName, payload){
+      try{
+        if(hasCleverTap() && typeof window.clevertap.event?.push === 'function'){
+          window.clevertap.event.push(evtName, payload);
+        } else {
+          console.log('[CT] event.push', evtName, payload);
+        }
+      }catch(e){ console.warn('event.push error', e); }
+    }
+
+    // Attempt coupon fetch with retry across promotions
+    function ctCouponFetchWithRetry(promoNames, maxRetry){
+      return new Promise((resolve, reject)=>{
+        let attempts = 0;
+        const tried = new Set();
+
+        const doTry = () => {
+          attempts++;
+          const remaining = promoNames.filter(n => !tried.has(n));
+          const promo = remaining.length ? randPick(remaining) : randPick(promoNames);
+          tried.add(promo);
+
+          // If clevertap.coupon.fetch exists, use it; else simulate for local testing.
+          const fetchFn = hasCleverTap() && window.clevertap.coupon && typeof window.clevertap.coupon.fetch === 'function'
+            ? window.clevertap.coupon.fetch
+            : null;
+
+          const onSuccess = (coupon) => resolve(coupon);
+          const onFail = (err) => {
+            if(attempts >= maxRetry) return reject(err || new Error('fetch failed'));
+            doTry();
+          };
+
+          if(fetchFn){
+            try{
+              // Many CT implementations: clevertap.coupon.fetch(promoName, successCb, errorCb)
+              fetchFn(promo, onSuccess, onFail);
+            }catch(e){
+              onFail(e);
+            }
+          } else {
+            // Local fallback simulation:
+            const simulatedName = randPick(promoNames);
+            onSuccess({ name: simulatedName, code: 'UNIQUECODE-' + Math.random().toString(16).slice(2,10).toUpperCase() });
+          }
+        };
+
+        doTry();
+      });
+    }
+
+    /**
+     * ===========================
+     * Render result
+     * ===========================
+     */
+    function renderResult(coupon){
+      const couponName = String(coupon?.name || '').trim();
+      const resultKey = COMMON_CONFIG.COUPON_NAME_TO_RESULT_KEY[couponName] || couponName;
+
+      const pct = COMMON_CONFIG.RESULT_PERCENT[resultKey] ?? 0;
+      const iconFile = COMMON_CONFIG.RESULT_ICONS[resultKey] || COMMON_CONFIG.RESULT_ICONS['PROMO_20'];
+
+      $('#resultIcon').src = COMMON_CONFIG.ASSET_BASE + iconFile;
+      $('#framePercent').textContent = String(pct || '--');
+
+      const code = String(coupon?.code || '').trim() || '------';
+      $('#uniqueCode').textContent = code;
+
+      // Learn more link placeholder/random
+      const link = randPick(COMMON_CONFIG.CTA_LINKS) || '#';
+      $('#btnLearnMore').onclick = () => { window.location.href = link; };
+
+      // Tracking
+      ctEventPush('XMAS_GAME_RESULT', {
+        coupon_name: couponName,
+        result_key: resultKey,
+        percent: pct,
+        code: code
+      });
+
+      if(COMMON_CONFIG.ENABLE_ONE_PLAY_LOCK){
+        try{ localStorage.setItem(COMMON_CONFIG.ONE_PLAY_KEY, JSON.stringify({ at: Date.now(), couponName, code, resultKey, pct })); }catch(e){}
+      }
+
+      setScreen('screenResult');
+    }
+
+    /**
+     * ===========================
+     * Init
+     * ===========================
+     */
+    (function init(){
+      const lang = (BUILD.LANG === 'en') ? 'en' : 'vi';
+      const t = I18N[lang];
+
+      // assets
+      $('#stickyImg').src = COMMON_CONFIG.ASSET_BASE + COMMON_CONFIG.STICKY_IMAGE;
+      $('#popupBaseImg').src = COMMON_CONFIG.ASSET_BASE + COMMON_CONFIG.POPUP_BASE;
+      $('#resultFrameImg').src = COMMON_CONFIG.ASSET_BASE + COMMON_CONFIG.RESULT_FRAME;
+
+      // form texts
+      $('#formTitle').textContent = t.formTitle;
+      $('#inpName').placeholder = t.namePh;
+      $('#inpEmail').placeholder = t.emailPh;
+      $('#agreeText').textContent = t.agree;
+      $('#btnOpenGift').textContent = t.openGift;
+
+      // result texts
+      $('#resultIntro').textContent = t.intro;
+      $('#frameT1').textContent = t.frameT1;
+      $('#frameT3').textContent = t.frameT3;
+      $('#resultNote').textContent = t.note;
+      $('#btnCopy').textContent = t.copy;
+      $('#btnLearnMore').textContent = t.learnMore;
+
+      // form icons (Màn 2)
+      const iconsWrap = $('#formIcons');
+      COMMON_CONFIG.FORM_ICONS.forEach((f, idx)=>{
+        const img = document.createElement('img');
+        img.alt = 'Icon ' + (idx+1);
+        img.src = COMMON_CONFIG.ASSET_BASE + f;
+        iconsWrap.appendChild(img);
+      });
+
+      // open/close
+      $('#spaSticky').addEventListener('click', ()=>{
+        setError('');
+        // Optional: one-play lock behavior
+        if(COMMON_CONFIG.ENABLE_ONE_PLAY_LOCK){
+          try{
+            const saved = localStorage.getItem(COMMON_CONFIG.ONE_PLAY_KEY);
+            if(saved){
+              const data = JSON.parse(saved);
+              // re-render
+              renderResult({ name: data.couponName, code: data.code });
+              openModal();
+              return;
+            }
+          }catch(e){}
+        }
+        setScreen('screenForm');
+        openModal();
+      });
+
+      $('#spaClose').addEventListener('click', ()=>{
+        closeModal();
+        if(COMMON_CONFIG.HIDE_STICKY_ON_CLOSE){
+          $('#spaSticky').hidden = true;
+        }
+      });
+
+      // submit
+      $('#leadForm').addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        setError('');
+
+        const name = String($('#inpName').value || '').trim();
+        const email = String($('#inpEmail').value || '').trim();
+        const agree = $('#inpAgree').checked;
+
+        if(!name || !email){
+          setError(t.errRequired);
+          return;
+        }
+        if(!validEmail(email)){
+          setError(t.errEmail);
+          return;
+        }
+        if(!agree){
+          setError(t.errAgree);
+          return;
+        }
+
+        // Profile push
+        ctProfilePush({ Site: { Name: name, Email: email } });
+
+        // Coupon fetch
+        $('#btnOpenGift').disabled = true;
+        try{
+          const coupon = await ctCouponFetchWithRetry(COMMON_CONFIG.PROMOTION_NAMES, COMMON_CONFIG.MAX_FETCH_RETRY);
+          renderResult(coupon);
+        }catch(err){
+          console.warn(err);
+          setError(t.errFetch);
+        }finally{
+          $('#btnOpenGift').disabled = false;
+        }
+      });
+
+      // copy
+      $('#btnCopy').addEventListener('click', async ()=>{
+        const code = $('#uniqueCode').textContent.trim();
+        if(!code || code === '------') return;
+        try{
+          await navigator.clipboard.writeText(code);
+          showToast(t.copied);
+        }catch(e){
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = code;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          showToast(t.copied);
+        }
+        ctEventPush('XMAS_GAME_COPY_CODE', { code });
+      });
+
+      // initial screen
+      setScreen('screenForm');
+    })();
+  </script>
+</body>
+</html>
