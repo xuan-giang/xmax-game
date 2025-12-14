@@ -335,11 +335,11 @@
     }
 
     /* Tablet */
-@media (max-width: 768px){
-  .spa-intro{
-    font-size: 24px;
-  }
-}
+    @media (max-width: 768px) {
+      .spa-intro {
+        font-size: 24px;
+      }
+    }
 
 
 
@@ -649,7 +649,7 @@
               <div class="spa-frame-text">
                 <div class="t1" id="frameT1"></div>
                 <div class="t2"><span id="framePercent">--</span>%</div>
-              <div class="t3" id="frameT3"></div>
+                <div class="t3" id="frameT3"></div>
               </div>
             </div>
           </div>
@@ -681,24 +681,24 @@
       ASSET_BASE: './assets/',
 
       // Assets
-      STICKY_IMAGE: 'sticky.png',
-      POPUP_BASE: 'popup-base.png',
-      RESULT_FRAME: 'result-frame.png',
+      STICKY_IMAGE: 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/sticky.png',
+      POPUP_BASE: 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/popup-base.png',
+      RESULT_FRAME: 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/result-frame.png',
 
       FORM_ICONS: [
-        'form-icon-1.png',
-        'form-icon-2.png',
-        'form-icon-3.png',
-        'form-icon-4.png',
-        'form-icon-5.png'
+        'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/form-icon-1.png',
+        'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/form-icon-2.png',
+        'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/form-icon-3.png',
+        'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/form-icon-4.png',
+        'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/form-icon-5.png'
       ],
 
       RESULT_ICONS: {
-        'PROMO_50': 'result-50.png',
-        'PROMO_20': 'result-20.png',
-        'PROMO_10': 'result-10.png',
-        'PROMO_8': 'result-8.png',
-        'PROMO_5': 'result-5.png'
+        'PROMO_50': 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/result-50.png',
+        'PROMO_20': 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/result-20.png',
+        'PROMO_10': 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/result-10.png',
+        'PROMO_8': 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/result-8.png',
+        'PROMO_5': 'https://cdn.jsdelivr.net/gh/xuan-giang/xmax-game@deploy/assets/result-5.png'
       },
 
       // Coupon name -> result key mapping (EDIT TO MATCH YOUR COUPON.NAME)
@@ -933,7 +933,7 @@
       const pct = COMMON_CONFIG.RESULT_PERCENT[resultKey] ?? 0;
       const iconFile = COMMON_CONFIG.RESULT_ICONS[resultKey] || COMMON_CONFIG.RESULT_ICONS['PROMO_20'];
 
-      $('#resultIcon').src = COMMON_CONFIG.ASSET_BASE + iconFile;
+      $('#resultIcon').src = iconFile;
       $('#framePercent').textContent = String(pct || '--');
 
       const code = String(coupon?.code || '').trim() || '------';
@@ -968,9 +968,9 @@
       const t = I18N[lang];
 
       // assets
-      $('#stickyImg').src = COMMON_CONFIG.ASSET_BASE + COMMON_CONFIG.STICKY_IMAGE;
-      $('#popupBaseImg').src = COMMON_CONFIG.ASSET_BASE + COMMON_CONFIG.POPUP_BASE;
-      $('#resultFrameImg').src = COMMON_CONFIG.ASSET_BASE + COMMON_CONFIG.RESULT_FRAME;
+      $('#stickyImg').src = COMMON_CONFIG.STICKY_IMAGE;
+      $('#popupBaseImg').src = COMMON_CONFIG.POPUP_BASE;
+      $('#resultFrameImg').src = COMMON_CONFIG.RESULT_FRAME;
 
       // form texts
       $('#formTitle').textContent = t.formTitle;
@@ -993,7 +993,7 @@
       COMMON_CONFIG.FORM_ICONS.forEach((f, idx) => {
         const img = document.createElement('img');
         img.alt = 'Icon ' + (idx + 1);
-        img.src = COMMON_CONFIG.ASSET_BASE + f;
+        img.src = f;
         iconsWrap.appendChild(img);
       });
 
