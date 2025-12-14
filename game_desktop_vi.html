@@ -334,6 +334,14 @@
       white-space: pre-line;
     }
 
+    /* Tablet */
+@media (max-width: 768px){
+  .spa-intro{
+    font-size: 24px;
+  }
+}
+
+
 
     .spa-result-row {
       display: flex;
@@ -418,7 +426,7 @@
     }
 
     .spa-code-row {
-      width: 72%;
+      width: 32%;
       margin: 6px auto 0;
       display: flex;
       gap: 8px;
@@ -649,12 +657,12 @@
           <div class="spa-note" id="resultNote"></div>
 
           <div class="spa-code-row">
-            <div class="spa-code" id="uniqueCode">------</div>
+            <div class="spa-code" id="uniqueCode" style="text-align: center;">------</div>
             <button class="spa-copy" type="button" id="btnCopy"></button>
           </div>
 
           <button class="spa-btn spa-btn--secondary"
-            style="font-family: 'Be Vietnam Pro', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;"
+            style="font-family: 'Be Vietnam Pro', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; width: 40%; margin-top: 2%;"
             type="button" id="btnLearnMore"></button>
         </div>
       </div>
@@ -904,7 +912,7 @@
           } else {
             // Local fallback simulation:
             const simulatedName = randPick(promoNames);
-            onSuccess({ name: simulatedName, code: 'UNIQUECODE-' + Math.random().toString(16).slice(2, 10).toUpperCase() });
+            onSuccess({ name: simulatedName, code: Math.random().toString(16).slice(2, 10).toUpperCase() });
           }
         };
 
