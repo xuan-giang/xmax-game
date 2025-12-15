@@ -909,7 +909,12 @@
             if (attempts >= maxRetry) return reject(err || new Error('fetch failed'));
             doTry();
           };
-
+try {
+              // Many CT implementations: clevertap.coupon.fetch(promoName, successCb, errorCb)
+              fetchFn(promo, onSuccess, onFail);
+            } catch (e) {
+              onFail(e);
+            }
           if (fetchFn) {
             try {
               // Many CT implementations: clevertap.coupon.fetch(promoName, successCb, errorCb)
@@ -919,8 +924,8 @@
             }
           } else {
             // Local fallback simulation:
-            const simulatedName = randPick(promoNames);
-            onSuccess({ name: simulatedName, code: Math.random().toString(16).slice(2, 10).toUpperCase() });
+            // const simulatedName = randPick(promoNames);
+            // onSuccess({ name: simulatedName, code: Math.random().toString(16).slice(2, 10).toUpperCase() });
           }
         };
 
@@ -1064,7 +1069,8 @@
           renderResult(coupon);
         } catch (err) {
           console.warn(err);
-          setError(t.errFetch);
+          showToast(t.errFetch);
+          showToast("Không thể lấy mã ưu đãi");
         } finally {
           $('#btnOpenGift').disabled = false;
         }
