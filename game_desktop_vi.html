@@ -51,9 +51,9 @@
     /* ========= Sticky (Màn 1) ========= */
     .spa-sticky {
       position: fixed;
-      right: 18px;
+      right: 12px;
       bottom: 18px;
-      width: 160px;
+      width: 8%;
       height: auto;
       cursor: pointer;
       z-index: 9999;
@@ -61,7 +61,7 @@
     }
 
     .spa-sticky img {
-      width: 100%;
+      width: 80%;
       height: auto;
       display: block;
       filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .25));
@@ -168,7 +168,7 @@
     .layout-form {
       position: absolute;
       left: 50%;
-      top: 72%;
+      top: 64%;
       transform: translate(-50%, -50%);
       width: min(640px, 62%);
       text-align: center;
@@ -181,19 +181,6 @@
       transform: translate(-50%, -50%);
       width: min(700px, 72%);
       text-align: center;
-    }
-
-    @media (max-width: 420px) {
-
-      .layout-form {
-        width: 76%;
-        top: 54%;
-      }
-
-      .layout-result {
-        width: 72%;
-        top: 56%;
-      }
     }
 
     .spa-title {
@@ -228,8 +215,8 @@
     }
 
     .spa-icons img {
-      width: 36px;
-      height: 36px;
+      width: 56px;
+      height: 56px;
       object-fit: contain;
       filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .22));
     }
@@ -257,7 +244,7 @@
     }
 
     .spa-input {
-      width: 72%;
+      width: 96%;
       height: var(--input-h);
       border-radius: var(--input-radius);
       border: 1px solid rgba(0, 0, 0, .06);
@@ -276,15 +263,18 @@
       width: 72%;
       display: flex;
       gap: 8px;
-      align-items: flex-start;
+      align-items: center;
       font-size: 13.52px;
       color: #5a4a4a;
       text-shadow: none;
     }
 
     .spa-check input {
+      width: 14px;
+      height: 14px;
       margin-top: 2px;
       font-family: 'Be Vietnam Pro', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      accent-color: #d62b2b;
     }
 
     .spa-btn {
@@ -293,14 +283,14 @@
       padding: var(--btn-pad-y) var(--btn-pad-x);
       font-weight: 800;
       cursor: pointer;
-      width: 72%;
+      width: 48%;
 
       letter-spacing: .3px;
       text-transform: uppercase;
     }
 
     .spa-btn--primary {
-      font-size: 28px;
+      font-size: 24px;
       font-family: 'Be Vietnam Pro', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: #9b001e;
       color: #ffffff;
@@ -545,14 +535,80 @@
       height: 98px;
     }
 
-    @media (max-width: 420px) {
-      .spa-icons img {
-        width: 40px;
-        height: 40px;
+
+    @media (max-width: 576px) {
+      .spa-sticky {
+        right: 1%;
+        bottom: 2%;
+        width: clamp(72px, 24vw, 110px);
+        /* mobile nhỏ -> tự co, màn lớn -> không quá to */
       }
+
+      .spa-sticky img {
+        width: 80%;
+      }
+
+      .layout-form {
+        width: 76%;
+        top: 80%;
+      }
+
+      .layout-result {
+        width: 72%;
+        top: 75%;
+      }
+
+      .layout-form .spa-title {
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .spa-input {
+        width: 80%;
+        height: 16px;
+        padding: 0 12px;
+        font-size: 10px;
+        border-radius: 10px;
+      }
+
+      .spa-check {
+        font-size: 6.52px;
+        gap: 0px;
+        align-items: flex-start;
+      }
+
+      .spa-form {
+        gap: 3px;
+      }
+
+      .spa-check input {
+        width: 10px;
+        height: 10px;
+        margin-top: 2px;
+        font-family: 'Be Vietnam Pro', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        accent-color: #d62b2b;
+      }
+
+      .spa-subtitle {
+        font-size: 6px;
+        line-height: 0.35;
+      }
+
+      .spa-icons img {
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    @media (max-width: 420px) {
 
       .spa-frame-text .t2 {
         font-size: 36px;
+      }
+
+      .layout-form {
+        width: 76%;
+        top: 75%;
       }
 
       /* Result row: stack on very small screens */
@@ -563,6 +619,11 @@
 
       .spa-result-frame {
         width: min(72%, 260px);
+      }
+
+      .spa-btn--primary {
+        font-size: 10px;
+        line-height: 2px;
       }
 
     }
@@ -780,7 +841,7 @@
         learnMore: 'TÌM HIỂU THÊM'
       },
       en: {
-        formTitle: 'CHRISTMAS IS HERE — UNWRAP GREAT DEALS',
+        formTitle: 'CHRISTMAS IS HERE — UNLOCK GREAT DEALS',
         namePh: 'Full name',
         emailPh: 'Email',
         agreePrefix: 'I agree to the ',
@@ -946,7 +1007,7 @@
       const url = `${CT_VOUCHER_API.endpoint}?identity=${encodeURIComponent(id)}`;
 
       let res;
-      debugger
+
       try {
         res = await ctAbortableFetch(url, {
           method: 'GET',
@@ -1031,8 +1092,6 @@
         throw apiErr;
       }
     }
-
-
 
     /**
      * ===========================
