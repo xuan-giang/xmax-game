@@ -1,9 +1,5 @@
 <!doctype html>
 <html lang="vi">
-<!--
-  Developer: nxgiang
-  Email: xuangiang.forwork@gmail.com
--->
 
 <head>
   <meta charset="utf-8" />
@@ -450,6 +446,9 @@
       background: rgba(216, 193, 175, .65);
       font-weight: 900;
       cursor: pointer;
+      background-image: url("https://kituhay.com/assets/images/copy-icon.svg");
+      background-repeat: no-repeat;
+      background-position: center;
     }
 
     .spa-btn--secondary {
@@ -541,6 +540,18 @@
       margin-top: 2%;
     }
 
+    @media (max-width: 1024px) {
+      .layout-result {
+        top: 55%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .layout-result {
+        top: 66%;
+      }
+    }
+
     @media (max-width: 576px) {
       .spa-sticky {
         right: 1%;
@@ -559,8 +570,8 @@
       }
 
       .layout-result {
-        width: 72%;
-        top: 75%;
+        width: 80%;
+        top: 72%;
       }
 
       .layout-form .spa-title {
@@ -605,7 +616,7 @@
       }
 
       .spa-intro {
-        font-size: 14px;
+        font-size: 12px;
       }
 
       .layout-result .spa-result-icon img {
@@ -614,28 +625,28 @@
       }
 
       .spa-result-frame {
-        width: clamp(80px, 42vw, 96x);
+        width: 36%;
       }
 
       .spa-frame-text .t1 {
-        font-size: 15px;
+        font-size: 10px;
       }
 
       .spa-frame-text .t2 {
-        font-size: 40px;
+        font-size: 16px;
       }
 
       .spa-frame-text .t3 {
-        font-size: 14px;
+        font-size: 10px;
       }
 
       .spa-note {
-        font-size: 10px;
+        font-size: 8px;
         line-height: 1;
       }
 
       .spa-code-row {
-        width: 72%;
+        width: 64%;
       }
 
       #btnLearnMore {
@@ -646,10 +657,6 @@
 
     @media (max-width: 420px) {
 
-      .spa-frame-text .t2 {
-        font-size: 36px;
-      }
-
       .layout-form {
         width: 76%;
         top: 75%;
@@ -657,12 +664,11 @@
 
       /* Result row: stack on very small screens */
       .spa-result-row {
-        flex-direction: column;
         gap: 8px;
       }
 
       .spa-result-frame {
-        width: min(72%, 260px);
+        width: 36%;
       }
 
       .spa-btn--primary {
@@ -670,6 +676,13 @@
         line-height: 2px;
       }
 
+    }
+
+    @media (max-width: 420px) {
+      .layout-result {
+        width: 96%;
+        top: 74%;
+      }
     }
   </style>
   <!-- CleverTap Web SDK (WORKING SNIPPET) -->
@@ -1222,7 +1235,7 @@
       $('#frameT1').textContent = t.frameT1;
       $('#frameT3').textContent = t.frameT3;
       $('#resultNote').textContent = t.note;
-      $('#btnCopy').textContent = '⧉';
+      $('#btnCopy').textContent = '';
       $('#btnLearnMore').textContent = t.learnMore;
 
       // form icons (Màn 2)
