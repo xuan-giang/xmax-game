@@ -16,7 +16,7 @@
       --popup-max-w-desktop: 520px;
       --popup-max-w-mobile: 360px;
 
-      --overlay-bg: rgba(0, 0, 0, .55);
+      --overlay-bg: transparent;
 
       --close-size: 34px;
       --close-bg: #d62b2b;
@@ -970,14 +970,40 @@
       return typeof window.clevertap === 'object' && window.clevertap;
     }
 
-    function ctProfilePush(profile) {
+    function ctOnUserLogin(profile) {
       try {
-        if (hasCleverTap() && window.clevertap.profile && typeof window.clevertap.profile.push === 'function') {
-          window.clevertap.profile.push(profile);
+        if (hasCleverTap() && window.clevertap.onUserLogin && typeof window.clevertap.onUserLogin.push === 'function') {
+          window.clevertap.onUserLogin.push(profile);
         } else {
-          console.log('[CT] profile.push', profile);
+          console.log('[CT] onUserLogin.push', profile);
         }
-      } catch (e) { console.warn('profile.push error', e); }
+      } catch (e) { console.warn('onUserLogin.push error', e); }
+    }
+
+    // Close / dismiss when this HTML is rendered inside a CleverTap Web Pop-up iframe.
+    // Ref: https://developer.clevertap.com/docs/web-popup#web-pop-ups
+    function ctDismissWebPopup() {
+      try {
+        var pd = (window.parent && window.parent.document) ? window.parent.document : null;
+        if (!pd) return false;
+
+        // Interstitial overlay + wrapper
+        var overlay = pd.getElementById('intentOpacityDiv');
+        var wrapperInterstitial = pd.getElementById('intentPreview');
+
+        // Box / Banner wrappers (IDs depend on template)
+        var wrapperBox0 = pd.getElementById('wizParDiv0');
+        var wrapperBox2 = pd.getElementById('wizParDiv2');
+
+        var removed = false;
+
+        if (overlay && typeof overlay.remove === 'function') { overlay.remove(); removed = true; }
+        if (wrapperInterstitial && typeof wrapperInterstitial.remove === 'function') { wrapperInterstitial.remove(); removed = true; }
+        if (wrapperBox0 && typeof wrapperBox0.remove === 'function') { wrapperBox0.remove(); removed = true; }
+        if (wrapperBox2 && typeof wrapperBox2.remove === 'function') { wrapperBox2.remove(); removed = true; }
+
+        return removed;
+      } catch (e) { return false; }
     }
 
     function ctEventPush(evtName, payload) {
@@ -992,10 +1018,10 @@
 
     // ===== Coupon fetch via CleverTap Vouchers API (GET) =====
     const CT_VOUCHER_API = {
-      endpoint: 'https://sg1.api.clevertap.com/1/promo/vouchers',
+      endpoint: 'https://ct-voucher-proxy.ngxuangiang2020.workers.dev/api/vouchers',
       // endpoint: 'http://localhost:3000/api/vouchers', // For local testing with CORS bypass
-      accountId: '884-5KK-857Z',
-      passcode: 'SYA-JWB-CPEL',
+      accountId: '',
+      passcode: '',
       timeoutMs: 9000
     };
 
@@ -1054,9 +1080,6 @@
         res = await ctAbortableFetch(url, {
           method: 'GET',
           headers: {
-            'X-CleverTap-Account-Id': CT_VOUCHER_API.accountId,
-            'X-CleverTap-Passcode': CT_VOUCHER_API.passcode,
-            'Content-Type': 'application/json',
             'Accept': 'application/json'
           }
         }, CT_VOUCHER_API.timeoutMs);
@@ -1232,6 +1255,9 @@
       });
 
       $('#spaClose').addEventListener('click', () => {
+        // If running inside CleverTap Web Pop-up iframe, remove CleverTap overlay/wrapper
+        if (ctDismissWebPopup()) return;
+
         closeModal();
         if (COMMON_CONFIG.HIDE_STICKY_ON_CLOSE) {
           $('#spaSticky').hidden = true;
@@ -1260,8 +1286,8 @@
           return;
         }
 
-        // Profile push
-        ctProfilePush({ Site: { Name: name, Email: email } });
+        // Identify user (onUserLogin)
+        ctOnUserLogin({ Site: { Name: name, Identity: email, Email: email } });
 
         // Coupon fetch
         $('#btnOpenGift').disabled = true;
