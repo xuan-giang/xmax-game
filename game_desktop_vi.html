@@ -5,6 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SPA Xmas Game</title>
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800;900&display=swap');
 
@@ -297,7 +298,31 @@
       transform: translateY(1px);
     }
 
-    .spa-error {
+    
+
+    /* Loading state for OPEN GIFT button */
+    .spa-btn.is-loading {
+      pointer-events: none;
+      opacity: .9;
+    }
+
+    .spa-btn .btn-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      margin-right: 8px;
+      vertical-align: -2px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 999px;
+      animation: spaSpin .9s linear infinite;
+    }
+
+    @keyframes spaSpin {
+      to { transform: rotate(360deg); }
+    }
+
+.spa-error {
       width: 72%;
       font-size: 12px;
       color: #ffe7e7;
@@ -685,6 +710,7 @@
       }
     }
   </style>
+
   <!-- CleverTap Web SDK (WORKING SNIPPET) -->
   <script type="text/javascript">
     var clevertap = window.clevertap || {
@@ -711,9 +737,8 @@
       s.parentNode.insertBefore(wzrk, s);
     })();
   </script>
-
-
 </head>
+
 <!--
   Developer: nxgiang
   Email: xuangiang.forwork@gmail.com
@@ -748,6 +773,7 @@
             <div class="spa-field">
               <input class="spa-input" id="inpName" type="text" name="name" required />
             </div>
+
             <div class="spa-field">
               <input class="spa-input" id="inpEmail" type="email" name="email" required />
             </div>
@@ -774,7 +800,7 @@
               <img id="resultFrameImg" alt="Result frame" />
               <div class="spa-frame-text">
                 <div class="t1" id="frameT1"></div>
-                <div class="t2"><span id="framePercent">--</span>%</div>
+                <div class="t2"><span id="framePercent">--</span>%*</div>
                 <div class="t3" id="frameT3"></div>
               </div>
             </div>
@@ -882,6 +908,7 @@
         agreeTerms: 'điều kiện, điều khoản',
         agreeSuffix: ' của chương trình',
         openGift: 'MỞ QUÀ NGAY',
+        loadingCode: 'Đang lấy mã',
         formSubtitle: 'Điền thông tin để nhận quà và cùng lan toả yêu thương',
         errRequired: 'Vui lòng nhập đầy đủ Họ và tên và Email.',
         errEmail: 'Email không đúng định dạng.',
@@ -903,6 +930,7 @@
         agreeTerms: 'terms & conditions',
         agreeSuffix: ' of the program',
         openGift: 'OPEN GIFT NOW',
+        loadingCode: 'Fetching code',
         formSubtitle: 'Fill in your info to receive a gift and share the love',
         errRequired: 'Please enter your full name and email.',
         errEmail: 'Invalid email format.',
@@ -924,8 +952,8 @@
      * ===========================
      */
     const BUILD = {
-      LANG: 'en', // change language here: 'vi' | 'en'
-      DEVICE: 'desktop' // 'desktop' | 'mobile'
+      LANG: 'vi', // change language here: 'vi' | 'en'
+      DEVICE: 'mobile' // 'desktop' | 'mobile'
     };
 
     /**
@@ -1032,7 +1060,6 @@
     // ===== Coupon fetch via CleverTap Vouchers API (GET) =====
     const CT_VOUCHER_API = {
       endpoint: 'https://ct-voucher-proxy.ngxuangiang2020.workers.dev/api/vouchers',
-      // endpoint: 'http://localhost:3000/api/vouchers', // For local testing with CORS bypass
       accountId: '',
       passcode: '',
       timeoutMs: 9000
@@ -1303,8 +1330,13 @@
         ctOnUserLogin({ Site: { Name: name, Identity: email, Email: email } });
 
         // Coupon fetch
-        $('#btnOpenGift').disabled = true;
+        const btn = $('#btnOpenGift');
+        btn.disabled = true;
+        btn.classList.add('is-loading');
+        btn.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span><span>${t.loadingCode}</span>`;
+
         try {
+          await new Promise(r => setTimeout(r, 5000));
           const coupon = await getCouponForUser(email);
           renderResult(coupon);
         } catch (err) {
@@ -1312,7 +1344,9 @@
           showToast(t.errFetch);
           showToast("Không thể lấy mã ưu đãi");
         } finally {
-          $('#btnOpenGift').disabled = false;
+          btn.classList.remove('is-loading');
+          btn.disabled = false;
+          btn.textContent = t.openGift;
         }
       });
 
@@ -1341,6 +1375,7 @@
     })();
   </script>
 </body>
+
 <!--
   Developer: nxgiang
   Email: xuangiang.forwork@gmail.com
